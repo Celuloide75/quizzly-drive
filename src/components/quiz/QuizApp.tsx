@@ -44,32 +44,22 @@ export const QuizApp = () => {
   } = useQuizLogic(questions);
 
   const parseCSV = (csvText: string): Question[] => {
-    const lines = csvText.trim().split('\n');
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-    
-    const questions: Question[] = [];
-    
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
-      
-      if (values.length >= 6) {
-        const question: Question = {
-          pregunta: values[headers.indexOf('pregunta')] || '',
-          A: values[headers.indexOf('A')] || '',
-          B: values[headers.indexOf('B')] || '',
-          C: values[headers.indexOf('C')] || '',
-          D: values[headers.indexOf('D')] || '',
-          correcta: (values[headers.indexOf('correcta')] || 'A') as 'A' | 'B' | 'C' | 'D'
-        };
-        
-        if (question.pregunta && question.A && question.B && question.C && question.D) {
-          questions.push(question);
-        }
-      }
-    }
-    
-    return questions;
-  };
+  const result = Papa.parse(csvText, {
+    header: true,
+    skipEmptyLines: true,
+  });
+  console.log(result.data); // 👈 Depuració
+  return result.data.map((row: any) => ({
+    pregunta: row.pregunta || '',
+    A: row.A || '',
+    B: row.B || '',
+    C: row.C || '',
+    D: row.D || '',
+    correcta: (row.correcta || 'A') as 'A' | 'B' | 'C' | 'D',
+  })).filter(q =>
+    q.pregunta && q.A && q.B && q.C && q.D
+  );
+};
 
   const loadQuestions = async () => {
     setIsLoading(true);
