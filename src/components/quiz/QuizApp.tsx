@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { QuizQuestion } from './QuizQuestion';
@@ -6,7 +7,7 @@ import { useQuizLogic } from './useQuizLogic';
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import Papa from 'papaparse'; // 👈 Afegit
+import Papa from 'papaparse';
 
 export interface Question {
   pregunta: string;
@@ -25,7 +26,6 @@ export interface Answer {
   isCorrect: boolean;
 }
 
-// URL fix del Google Sheets
 const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/1f2CO2iYCD6g3Uhte6MvhkJCBv7n_rrBuE1iotB_jX9U/export?format=csv';
 
 export const QuizApp = () => {
@@ -33,7 +33,7 @@ export const QuizApp = () => {
   const [isQuizStarted, setIsQuizStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const {
     currentQuestionIndex,
     answers,
@@ -41,26 +41,31 @@ export const QuizApp = () => {
     isQuizCompleted,
     handleAnswer,
     nextQuestion,
-    resetQuiz
+    resetQuiz,
   } = useQuizLogic(questions);
 
-  // 👇 Nova funció amb PapaParse
   const parseCSV = (csvText: string): Question[] => {
     const result = Papa.parse(csvText, {
       header: true,
       skipEmptyLines: true,
+      encoding: 'UTF-8',
+      newline: '',
+      transformHeader: (header) => header.trim().toLowerCase(),
+      transform: (value) => value?.trim?.(),
     });
 
-    return result.data.map((row: any) => ({
-      pregunta: row.pregunta || '',
-      A: row.A || '',
-      B: row.B || '',
-      C: row.C || '',
-      D: row.D || '',
-      correcta: (row.correcta || 'A') as 'A' | 'B' | 'C' | 'D',
-    })).filter(q =>
-      q.pregunta && q.A && q.B && q.C && q.D
-    );
+    return result.data
+      .map((row: any) => {
+        const pregunta = row.pregunta ?? '';
+        const A = row.a ?? row.A ?? '';
+        const B = row.b ?? row.B ?? '';
+        const C = row.c ?? row.C ?? '';
+        const D = row.d ?? row.D ?? '';
+        const correcta = (row.correcta ?? 'A').toUpperCase();
+
+        return { pregunta, A, B, C, D, correcta } as Question;
+      })
+      .filter((q) => q.pregunta && q.A && q.B && q.C && q.D);
   };
 
   const loadQuestions = async () => {
@@ -69,19 +74,25 @@ export const QuizApp = () => {
 
     try {
       const response = await fetch(GOOGLE_SHEETS_URL);
-      
       if (!response.ok) {
-        throw new Error('No s\'ha pogut carregar el fitxer de preguntes.');
+        throw new Error("No s'ha pogut carregar el fitxer de preguntes.");
       }
 
       const csvText = await response.text();
-      const loadedQuestions = parseCSV(csvText);
+      const allQuestions = parseCSV(csvText);
 
-      if (loadedQuestions.length === 0) {
-        throw new Error('No s\'han trobat preguntes vàlides al fitxer.');
+      if (allQuestions.length === 0) {
+        throw new Error("No s'han trobat preguntes vàlides al fitxer.");
       }
 
-      setQuestions(loadedQuestions);
+      const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+      const selected = shuffled.slice(0, Math.min(10, shuffled.length));
+
+      if (selected.length === 0) {
+        throw new Error("No hi ha preguntes suficients per fer el test.");
+      }
+
+      setQuestions(selected);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconegut');
     } finally {
@@ -93,10 +104,12 @@ export const QuizApp = () => {
     loadQuestions();
   }, []);
 
-  const startQuiz = () => {
-    resetQuiz();
-    setIsQuizStarted(true);
-  };
+  useEffect(() => {
+    if (questions.length > 0) {
+      resetQuiz();
+      setIsQuizStarted(true);
+    }
+  }, [questions]);
 
   const restartApp = () => {
     setQuestions([]);
@@ -107,10 +120,10 @@ export const QuizApp = () => {
 
   if (isQuizCompleted) {
     return (
-      <QuizResults 
+      <QuizResults
         answers={answers}
         questions={questions}
-        onRestart={startQuiz}
+        onRestart={() => loadQuestions()}
         onBackToUpload={restartApp}
       />
     );
@@ -136,7 +149,7 @@ export const QuizApp = () => {
             <AlertCircle className="w-12 h-12 mx-auto mb-4 text-destructive" />
             <h2 className="text-xl font-semibold mb-2">Error al carregar</h2>
           </div>
-          
+
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
@@ -165,13 +178,13 @@ export const QuizApp = () => {
               Test amb preguntes carregades automàticament
             </p>
             <div className="text-sm text-muted-foreground mb-8">
-              ✅ {questions.length} preguntes carregades correctament
+              ✅ {questions.length} preguntes seleccionades
             </div>
           </div>
-          
+
           <div className="text-center">
             <Button
-              onClick={startQuiz}
+              onClick={() => loadQuestions()}
               size="lg"
               className="bg-primary hover:bg-primary-hover text-primary-foreground px-8 py-4 text-lg"
             >

@@ -1,9 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle, ArrowRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Question } from './QuizApp';
 
 interface QuizQuestionProps {
@@ -11,7 +8,7 @@ interface QuizQuestionProps {
   questionNumber: number;
   totalQuestions: number;
   showResult: boolean;
-  onAnswer: (answer: 'A' | 'B' | 'C' | 'D') => void;
+  onAnswer: (selected: 'A' | 'B' | 'C' | 'D') => void;
   onNext: () => void;
 }
 
@@ -21,111 +18,58 @@ export const QuizQuestion = ({
   totalQuestions,
   showResult,
   onAnswer,
-  onNext
 }: QuizQuestionProps) => {
-  const [selectedAnswer, setSelectedAnswer] = useState<'A' | 'B' | 'C' | 'D' | null>(null);
+  const [selected, setSelected] = useState<'A' | 'B' | 'C' | 'D' | null>(null);
 
-  const handleAnswerClick = (answer: 'A' | 'B' | 'C' | 'D') => {
-    if (showResult) return;
-    setSelectedAnswer(answer);
-    onAnswer(answer);
+  useEffect(() => {
+    setSelected(null); // Reinicia la selecció quan canvia la pregunta
+  }, [question]);
+
+  const handleClick = (option: 'A' | 'B' | 'C' | 'D') => {
+    if (selected !== null) return; // Evita múltiples clics
+    setSelected(option);
+    onAnswer(option);
   };
 
-  const handleNext = () => {
-    setSelectedAnswer(null);
-    onNext();
-  };
-
-  const getAnswerStyle = (option: 'A' | 'B' | 'C' | 'D') => {
-    if (!showResult) {
-      return selectedAnswer === option 
-        ? 'bg-quiz-selected border-primary' 
-        : 'bg-card hover:bg-secondary/50 border-border';
-    }
-
-    if (option === question.correcta) {
-      return 'bg-success text-success-foreground border-success';
-    }
-
-    if (selectedAnswer === option && option !== question.correcta) {
-      return 'bg-destructive text-destructive-foreground border-destructive';
-    }
-
-    return 'bg-muted border-border opacity-60';
-  };
-
-  const getAnswerIcon = (option: 'A' | 'B' | 'C' | 'D') => {
-    if (!showResult) return null;
-
-    if (option === question.correcta) {
-      return <CheckCircle className="w-5 h-5" />;
-    }
-
-    if (selectedAnswer === option && option !== question.correcta) {
-      return <XCircle className="w-5 h-5" />;
-    }
-
-    return null;
-  };
-
-  const progress = (questionNumber / totalQuestions) * 100;
+  const isCorrect = selected && selected === question.correcta;
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Header with progress */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <span className="text-sm font-medium text-muted-foreground">
-            Pregunta {questionNumber} de {totalQuestions}
-          </span>
-          <span className="text-sm font-medium text-primary">
-            {Math.round(progress)}%
-          </span>
+    <div className="flex justify-center">
+      <Card className="w-full max-w-2xl min-h-[400px] h-auto p-8 shadow-[var(--shadow-quiz)] text-left space-y-6">
+        <div className="text-sm text-muted-foreground">
+          Pregunta {questionNumber} de {totalQuestions}
         </div>
-        <Progress value={progress} className="h-2" />
-      </div>
-
-      {/* Question Card */}
-      <Card className="p-8 shadow-[var(--shadow-quiz)] mb-8">
-        <h2 className="text-2xl font-bold text-foreground mb-8 leading-relaxed">
-          {question.pregunta}
-        </h2>
-
-        <div className="space-y-4">
+        <h2 className="text-xl font-semibold">{question.pregunta}</h2>
+        <div className="flex flex-col gap-4 mt-4">
           {(['A', 'B', 'C', 'D'] as const).map((option) => (
-            <button
-              key={option}
-              onClick={() => handleAnswerClick(option)}
-              disabled={showResult}
-              className={cn(
-                "w-full p-6 rounded-xl border-2 transition-all duration-200 text-left group",
-                "hover:scale-[1.02] active:scale-[0.98]",
-                getAnswerStyle(option)
-              )}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <span className="w-8 h-8 rounded-full bg-background/20 flex items-center justify-center font-semibold text-sm">
-                    {option}
-                  </span>
-                  <span className="text-lg">{question[option]}</span>
-                </div>
-                {getAnswerIcon(option)}
-              </div>
-            </button>
+        <Button
+  key={option}
+  onClick={() => handleClick(option)}
+  variant="outline"
+  className={`flex flex-row items-center justify-start text-left py-2 px-3 whitespace-normal break-words rounded-lg w-full min-h-[120px] max-h-[140px] overflow-y-auto ${
+    selected
+      ? option === question.correcta
+        ? 'border-green-500 text-green-600'
+        : option === selected
+        ? 'border-red-500 text-red-600'
+        : 'opacity-50'
+      : ''
+  }`}
+  disabled={selected !== null}
+>
+  <span className="font-bold mr-2">{option}.</span>
+  <span className="break-words text-left w-full">{question[option]}</span>
+</Button>
           ))}
         </div>
 
-        {showResult && (
-          <div className="mt-8 flex justify-center">
-            <Button 
-              onClick={handleNext}
-              size="lg"
-              className="bg-primary hover:bg-primary-hover text-primary-foreground px-8"
-            >
-              {questionNumber === totalQuestions ? 'Veure Resultats' : 'Següent Pregunta'}
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+        {showResult && selected && (
+          <div
+            className={`mt-4 text-center font-semibold ${
+              isCorrect ? 'text-green-600' : 'text-red-600'
+            }`}
+          >
+            {isCorrect ? '✅ Resposta correcta!' : '❌ Resposta incorrecta'}
           </div>
         )}
       </Card>

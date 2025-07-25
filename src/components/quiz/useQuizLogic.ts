@@ -1,73 +1,57 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+
+import { useState } from 'react';
 import { Question, Answer } from './QuizApp';
 
 export const useQuizLogic = (questions: Question[]) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [showResult, setShowResult] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isQuizCompleted, setIsQuizCompleted] = useState(false);
 
-  const isQuizCompleted = currentQuestionIndex >= questions.length && answers.length > 0;
+  const handleAnswer = (selected: 'A' | 'B' | 'C' | 'D') => {
+  if (showResult) return;
 
-  const nextQuestion = useCallback(() => {
-    // Clear any existing timer
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
+  const current = questions[currentQuestionIndex];
+  const isCorrect = selected === current.correcta;
+
+  const answer: Answer = {
+    questionIndex: currentQuestionIndex,
+    question: current.pregunta,
+    selectedAnswer: selected,
+    correctAnswer: current.correcta,
+    isCorrect,
+  };
+
+  setAnswers((prev) => [...prev, answer]);
+  setShowResult(true);
+
+  setTimeout(() => {
     setShowResult(false);
-    setCurrentQuestionIndex(prev => prev + 1);
-  }, []);
-
-  const handleAnswer = useCallback((selectedAnswer: 'A' | 'B' | 'C' | 'D') => {
-    if (showResult || currentQuestionIndex >= questions.length) return;
-
-    const currentQuestion = questions[currentQuestionIndex];
-    const isCorrect = selectedAnswer === currentQuestion.correcta;
-
-    const newAnswer: Answer = {
-      questionIndex: currentQuestionIndex,
-      question: currentQuestion.pregunta,
-      selectedAnswer,
-      correctAnswer: currentQuestion.correcta,
-      isCorrect
-    };
-
-    setAnswers(prev => [...prev, newAnswer]);
-    setShowResult(true);
-  }, [currentQuestionIndex, questions, showResult]);
-
-  // Auto-advance to next question after showing result
-  useEffect(() => {
-    if (showResult) {
-      timerRef.current = setTimeout(() => {
-        nextQuestion();
-      }, 500); // Wait 0.5 seconds before auto-advancing
+    if (currentQuestionIndex + 1 < questions.length) {
+      setCurrentQuestionIndex((prev) => prev + 1);
+    } else {
+      setIsQuizCompleted(true);
     }
+  }, 1000); // ⏱️ 1,5 segons de pausa
+};
 
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [showResult, currentQuestionIndex, questions.length, nextQuestion]);
+  const nextQuestion = () => {
+    if (currentQuestionIndex + 1 < questions.length) {
+      setCurrentQuestionIndex((prev) => {
+      console.log('➡️ Passem a la següent pregunta:', prev + 1);
+      return prev + 1;
+    });
+    } else {
+      setIsQuizCompleted(true);
+    }
+  };
 
-  const resetQuiz = useCallback(() => {
+  const resetQuiz = () => {
     setCurrentQuestionIndex(0);
     setAnswers([]);
     setShowResult(false);
-  }, []);
-
-  // Shuffle questions when quiz starts
-  const shuffleQuestions = useCallback((questionsToShuffle: Question[]): Question[] => {
-    const shuffled = [...questionsToShuffle];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  }, []);
+    setIsQuizCompleted(false);
+  };
 
   return {
     currentQuestionIndex,
@@ -77,6 +61,5 @@ export const useQuizLogic = (questions: Question[]) => {
     handleAnswer,
     nextQuestion,
     resetQuiz,
-    shuffleQuestions
   };
 };
