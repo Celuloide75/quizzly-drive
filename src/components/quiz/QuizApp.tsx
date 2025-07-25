@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { CSVUploader } from './CSVUploader';
 import { QuizQuestion } from './QuizQuestion';
 import { QuizResults } from './QuizResults';
 import { useQuizLogic } from './useQuizLogic';
+import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export interface Question {
   pregunta: string;
@@ -22,9 +24,14 @@ export interface Answer {
   isCorrect: boolean;
 }
 
+// URL fix del Google Sheets
+const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/1f2CO2iYCD6g3Uhte6MvhkJCBv7n_rrBuE1iotB_jX9U/export?format=csv';
+
 export const QuizApp = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isQuizStarted, setIsQuizStarted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   const {
     currentQuestionIndex,
@@ -36,20 +43,74 @@ export const QuizApp = () => {
     resetQuiz
   } = useQuizLogic(questions);
 
-  const handleQuestionsLoaded = (loadedQuestions: Question[]) => {
-    setQuestions(loadedQuestions);
-    setIsQuizStarted(false);
+  const parseCSV = (csvText: string): Question[] => {
+    const lines = csvText.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    
+    const questions: Question[] = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+      
+      if (values.length >= 6) {
+        const question: Question = {
+          pregunta: values[headers.indexOf('pregunta')] || '',
+          A: values[headers.indexOf('A')] || '',
+          B: values[headers.indexOf('B')] || '',
+          C: values[headers.indexOf('C')] || '',
+          D: values[headers.indexOf('D')] || '',
+          correcta: (values[headers.indexOf('correcta')] || 'A') as 'A' | 'B' | 'C' | 'D'
+        };
+        
+        if (question.pregunta && question.A && question.B && question.C && question.D) {
+          questions.push(question);
+        }
+      }
+    }
+    
+    return questions;
   };
+
+  const loadQuestions = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(GOOGLE_SHEETS_URL);
+      
+      if (!response.ok) {
+        throw new Error('No s\'ha pogut carregar el fitxer de preguntes.');
+      }
+
+      const csvText = await response.text();
+      const loadedQuestions = parseCSV(csvText);
+
+      if (loadedQuestions.length === 0) {
+        throw new Error('No s\'han trobat preguntes vàlides al fitxer.');
+      }
+
+      setQuestions(loadedQuestions);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconegut');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadQuestions();
+  }, []);
 
   const startQuiz = () => {
     resetQuiz();
     setIsQuizStarted(true);
   };
 
-  const backToUpload = () => {
+  const restartApp = () => {
     setQuestions([]);
     setIsQuizStarted(false);
     resetQuiz();
+    loadQuestions();
   };
 
   if (isQuizCompleted) {
@@ -58,8 +119,45 @@ export const QuizApp = () => {
         answers={answers}
         questions={questions}
         onRestart={startQuiz}
-        onBackToUpload={backToUpload}
+        onBackToUpload={restartApp}
       />
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md p-8 shadow-[var(--shadow-quiz)] text-center">
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-primary" />
+          <h2 className="text-xl font-semibold mb-2">Carregant preguntes...</h2>
+          <p className="text-muted-foreground">Un moment, estem preparant el quiz</p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md p-8 shadow-[var(--shadow-quiz)]">
+          <div className="text-center mb-6">
+            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-destructive" />
+            <h2 className="text-xl font-semibold mb-2">Error al carregar</h2>
+          </div>
+          
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+
+          <div className="text-center">
+            <Button onClick={loadQuestions} className="bg-primary hover:bg-primary-hover text-primary-foreground">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Tornar a intentar
+            </Button>
+          </div>
+        </Card>
+      </div>
     );
   }
 
@@ -71,26 +169,23 @@ export const QuizApp = () => {
             <h1 className="text-4xl font-bold bg-[var(--gradient-primary)] bg-clip-text text-transparent mb-4">
               Quiz Interactiu
             </h1>
-            <p className="text-lg text-muted-foreground">
-              Carrega un fitxer CSV amb preguntes des de Google Drive
+            <p className="text-lg text-muted-foreground mb-6">
+              Test amb preguntes carregades automàticament
             </p>
+            <div className="text-sm text-muted-foreground mb-8">
+              ✅ {questions.length} preguntes carregades correctament
+            </div>
           </div>
           
-          <CSVUploader onQuestionsLoaded={handleQuestionsLoaded} />
-          
-          {questions.length > 0 && !isQuizStarted && (
-            <div className="mt-8 text-center">
-              <p className="text-sm text-muted-foreground mb-4">
-                {questions.length} preguntes carregades correctament
-              </p>
-              <button
-                onClick={startQuiz}
-                className="bg-primary hover:bg-primary-hover text-primary-foreground px-8 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105"
-              >
-                Començar Quiz
-              </button>
-            </div>
-          )}
+          <div className="text-center">
+            <Button
+              onClick={startQuiz}
+              size="lg"
+              className="bg-primary hover:bg-primary-hover text-primary-foreground px-8 py-4 text-lg"
+            >
+              Començar Quiz
+            </Button>
+          </div>
         </Card>
       </div>
     );

@@ -82,8 +82,8 @@ export const QuizResults = ({ answers, questions, onRestart, onBackToUpload }: Q
               Repetir Quiz
             </Button>
             <Button onClick={onBackToUpload} variant="outline">
-              <Upload className="w-4 h-4 mr-2" />
-              Carregar Nou CSV
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Recarregar Preguntes
             </Button>
           </div>
         </Card>
