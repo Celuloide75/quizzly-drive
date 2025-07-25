@@ -39,10 +39,10 @@ export const useQuizLogic = (questions: Question[]) => {
 
   // Auto-advance to next question after showing result
   useEffect(() => {
-    if (showResult && currentQuestionIndex < questions.length - 1) {
+    if (showResult) {
       timerRef.current = setTimeout(() => {
         nextQuestion();
-      }, 2500); // Wait 2.5 seconds before auto-advancing
+      }, 500); // Wait 0.5 seconds before auto-advancing
     }
 
     return () => {
