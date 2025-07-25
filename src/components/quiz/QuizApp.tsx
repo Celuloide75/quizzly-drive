@@ -6,6 +6,7 @@ import { useQuizLogic } from './useQuizLogic';
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import Papa from 'papaparse';
 
 export interface Question {
   pregunta: string;
@@ -44,22 +45,28 @@ export const QuizApp = () => {
   } = useQuizLogic(questions);
 
   const parseCSV = (csvText: string): Question[] => {
-  const result = Papa.parse(csvText, {
-    header: true,
-    skipEmptyLines: true,
-  });
-  console.log(result.data); // 👈 Depuració
-  return result.data.map((row: any) => ({
-    pregunta: row.pregunta || '',
-    A: row.A || '',
-    B: row.B || '',
-    C: row.C || '',
-    D: row.D || '',
-    correcta: (row.correcta || 'A') as 'A' | 'B' | 'C' | 'D',
-  })).filter(q =>
-    q.pregunta && q.A && q.B && q.C && q.D
-  );
-};
+    const result = Papa.parse(csvText, {
+      header: true,
+      skipEmptyLines: true,
+      encoding: 'UTF-8',
+      newline: '',
+      transformHeader: (header) => header.trim().toLowerCase(),
+      transform: (value) => value?.trim?.()
+    });
+
+    return result.data
+      .map((row: any) => {
+        const pregunta = row.pregunta ?? '';
+        const A = row.a ?? row.A ?? '';
+        const B = row.b ?? row.B ?? '';
+        const C = row.c ?? row.C ?? '';
+        const D = row.d ?? row.D ?? '';
+        const correcta = (row.correcta ?? 'A').toUpperCase();
+
+        return { pregunta, A, B, C, D, correcta } as Question;
+      })
+      .filter(q => q.pregunta && q.A && q.B && q.C && q.D);
+  };
 
   const loadQuestions = async () => {
     setIsLoading(true);
@@ -67,16 +74,15 @@ export const QuizApp = () => {
 
     try {
       const response = await fetch(GOOGLE_SHEETS_URL);
-      
       if (!response.ok) {
-        throw new Error('No s\'ha pogut carregar el fitxer de preguntes.');
+        throw new Error("No s'ha pogut carregar el fitxer de preguntes.");
       }
 
       const csvText = await response.text();
       const loadedQuestions = parseCSV(csvText);
 
       if (loadedQuestions.length === 0) {
-        throw new Error('No s\'han trobat preguntes vàlides al fitxer.');
+        throw new Error("No s'han trobat preguntes vàlides al fitxer.");
       }
 
       setQuestions(loadedQuestions);
