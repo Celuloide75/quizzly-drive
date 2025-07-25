@@ -1,12 +1,23 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Question, Answer } from './QuizApp';
 
 export const useQuizLogic = (questions: Question[]) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [showResult, setShowResult] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const isQuizCompleted = currentQuestionIndex >= questions.length && answers.length > 0;
+
+  const nextQuestion = useCallback(() => {
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    setShowResult(false);
+    setCurrentQuestionIndex(prev => prev + 1);
+  }, []);
 
   const handleAnswer = useCallback((selectedAnswer: 'A' | 'B' | 'C' | 'D') => {
     if (showResult || currentQuestionIndex >= questions.length) return;
@@ -26,10 +37,21 @@ export const useQuizLogic = (questions: Question[]) => {
     setShowResult(true);
   }, [currentQuestionIndex, questions, showResult]);
 
-  const nextQuestion = useCallback(() => {
-    setShowResult(false);
-    setCurrentQuestionIndex(prev => prev + 1);
-  }, []);
+  // Auto-advance to next question after showing result
+  useEffect(() => {
+    if (showResult && currentQuestionIndex < questions.length - 1) {
+      timerRef.current = setTimeout(() => {
+        nextQuestion();
+      }, 2500); // Wait 2.5 seconds before auto-advancing
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [showResult, currentQuestionIndex, questions.length, nextQuestion]);
 
   const resetQuiz = useCallback(() => {
     setCurrentQuestionIndex(0);
