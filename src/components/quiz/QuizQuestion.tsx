@@ -24,12 +24,14 @@ export const QuizQuestion = ({
   useEffect(() => {
     setSelected(null); // Reinicia la selecció quan canvia la pregunta
   }, [question]);
-useEffect(() => {
-  // Quan canvia la pregunta, treu el focus de qualsevol botó (solució Android)
-  if (document.activeElement instanceof HTMLElement) {
-    document.activeElement.blur();
-  }
-}, [question]);
+
+  useEffect(() => {
+    // Quan canvia la pregunta, treu el focus de qualsevol botó (solució Android)
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  }, [question]);
+
   const handleClick = (option: 'A' | 'B' | 'C' | 'D') => {
     if (selected !== null) return; // Evita múltiples clics
     setSelected(option);
@@ -47,24 +49,24 @@ useEffect(() => {
         <h2 className="text-xl font-semibold">{question.pregunta}</h2>
         <div className="flex flex-col gap-4 mt-4">
           {(['A', 'B', 'C', 'D'] as const).map((option) => (
-        <Button
-  key={option}
-  onClick={() => handleClick(option)}
-  variant="outline"
-  className={`flex flex-row items-center justify-start text-left py-2 px-3 whitespace-normal break-words rounded-lg w-full min-h-[120px] max-h-[140px] overflow-y-auto ${
-    selected
-      ? option === question.correcta
-        ? 'border-green-500 text-green-600'
-        : option === selected
-        ? 'border-red-500 text-red-600'
-        : 'opacity-50'
-      : ''
-  }`}
-  disabled={selected !== null}
->
-  <span className="font-bold mr-2">{option}.</span>
-  <span className="break-words text-left w-full">{question[option]}</span>
-</Button>
+            <Button
+              key={option}
+              onClick={() => handleClick(option)}
+              variant="outline"
+              className={`flex flex-row items-center justify-start text-left py-2 px-3 whitespace-normal break-words rounded-lg w-full min-h-[120px] max-h-[140px] overflow-y-auto ${
+                selected
+                  ? option === question.correcta
+                    ? 'border-green-500 text-green-600'
+                    : option === selected
+                    ? 'border-red-500 text-red-600'
+                    : 'opacity-50'
+                  : ''
+              }`}
+              disabled={selected !== null}
+            >
+              <span className="font-bold mr-2">{option}.</span>
+              <span className="break-words text-left w-full">{question[option]}</span>
+            </Button>
           ))}
         </div>
 
