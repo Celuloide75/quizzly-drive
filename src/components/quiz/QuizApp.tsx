@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { QuizQuestion } from './QuizQuestion';
@@ -196,17 +195,19 @@ export const QuizApp = () => {
     );
   }
 
+  const currentQuestion = questions[currentQuestionIndex];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 p-4">
-    <QuizQuestion
-  key={questionNumber} // <-- AIXÒ ÉS CLAU!
-  question={question}
-  questionNumber={questionNumber}
-  totalQuestions={totalQuestions}
-  showResult={showResult}
-  onAnswer={handleAnswer}
-  onNext={nextQuestion}
-/>
+      <QuizQuestion
+        key={currentQuestion.pregunta}
+        question={currentQuestion}
+        questionNumber={currentQuestionIndex + 1}
+        totalQuestions={questions.length}
+        showResult={showResult}
+        onAnswer={handleAnswer}
+        onNext={nextQuestion}
+      />
     </div>
   );
 };
