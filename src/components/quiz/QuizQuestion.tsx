@@ -18,7 +18,6 @@ export const QuizQuestion = ({
   totalQuestions,
   showResult,
   onAnswer,
-  onNext,
 }: QuizQuestionProps) => {
   const [selected, setSelected] = useState<'A' | 'B' | 'C' | 'D' | null>(null);
 
@@ -35,9 +34,6 @@ export const QuizQuestion = ({
     if (selected !== null) return;
     setSelected(option);
     onAnswer(option);
-    setTimeout(() => {
-      onNext();
-    }, 1500);
   };
 
   const isCorrect = selected && selected === question.correcta;
