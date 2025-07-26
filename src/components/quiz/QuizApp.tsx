@@ -198,14 +198,15 @@ export const QuizApp = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 p-4">
-      <QuizQuestion
-        question={questions[currentQuestionIndex]}
-        questionNumber={currentQuestionIndex + 1}
-        totalQuestions={questions.length}
-        showResult={showResult}
-        onAnswer={handleAnswer}
-        onNext={nextQuestion}
-      />
+    <QuizQuestion
+  key={questionNumber} // <-- AIXÒ ÉS CLAU!
+  question={question}
+  questionNumber={questionNumber}
+  totalQuestions={totalQuestions}
+  showResult={showResult}
+  onAnswer={handleAnswer}
+  onNext={nextQuestion}
+/>
     </div>
   );
 };
