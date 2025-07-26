@@ -24,7 +24,12 @@ export const QuizQuestion = ({
   useEffect(() => {
     setSelected(null); // Reinicia la selecció quan canvia la pregunta
   }, [question]);
-
+useEffect(() => {
+  // Quan canvia la pregunta, treu el focus de qualsevol botó (solució Android)
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+}, [question]);
   const handleClick = (option: 'A' | 'B' | 'C' | 'D') => {
     if (selected !== null) return; // Evita múltiples clics
     setSelected(option);
