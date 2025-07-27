@@ -39,7 +39,7 @@ export const QuizResults = ({ answers, questions, onRestart, onBackToUpload }: Q
         const color = isCorrect ? [0, 128, 0] : isUserWrong ? [200, 0, 0] : [0, 0, 0];
         const fontWeight = isCorrect || isUserWrong ? "bold" : "normal";
 
-        doc.setTextColor(*color);
+        doc.setTextColor(...color);
         doc.setFont("helvetica", fontWeight);
         doc.text(text, 12, y);
         y += 6;
