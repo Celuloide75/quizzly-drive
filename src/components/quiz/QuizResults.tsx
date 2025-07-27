@@ -4,7 +4,6 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Answer, Question } from './QuizApp';
 import { saveAs } from 'file-saver';
-import { Document, Packer, Paragraph, TextRun } from 'docx';
 import jsPDF from 'jspdf';
 
 interface QuizResultsProps {
@@ -16,43 +15,6 @@ interface QuizResultsProps {
 
 export const QuizResults = ({ answers, questions, onRestart, onBackToUpload }: QuizResultsProps) => {
   const correctCount = answers.filter((a) => a.isCorrect).length;
-
-  const downloadErrorsAsDocx = async () => {
-    const incorrect = answers.filter(a => !a.isCorrect);
-
-    const allBlocks = incorrect.flatMap((a, index) => {
-      const q = questions[a.questionIndex];
-      const options = ['A', 'B', 'C', 'D'] as const;
-
-      const header = new Paragraph({ children: [new TextRun({ text: `${index + 1}. ${q.pregunta}`, bold: true })] });
-
-      const optionBlocks = options.map(opt => {
-        const text = `${opt}. ${q[opt]}`;
-        const isCorrect = opt === a.correctAnswer;
-        const isUser = opt === a.selectedAnswer;
-        let run = new TextRun(text);
-        if (isCorrect) run = run.color("008000").bold();
-        if (isUser && !isCorrect) run = run.color("ff0000").bold();
-        return new Paragraph({ children: [run] });
-      });
-
-      return [header, ...optionBlocks, new Paragraph({ text: "" })];
-    });
-
-    const doc = new Document({
-      sections: [
-        {
-          children: [
-            new Paragraph({ children: [new TextRun({ text: "Respostes incorrectes", bold: true, size: 28 })] }),
-            ...allBlocks
-          ]
-        }
-      ]
-    });
-
-    const blob = await Packer.toBlob(doc);
-    saveAs(blob, "respostes_incorrectes.docx");
-  };
 
   const downloadErrorsAsPdf = () => {
     const incorrect = answers.filter(a => !a.isCorrect);
@@ -77,13 +39,14 @@ export const QuizResults = ({ answers, questions, onRestart, onBackToUpload }: Q
         const color = isCorrect ? [0, 128, 0] : isUserWrong ? [200, 0, 0] : [0, 0, 0];
         const fontWeight = isCorrect || isUserWrong ? "bold" : "normal";
 
-        doc.setTextColor(...color);
+        doc.setTextColor(*color);
         doc.setFont("helvetica", fontWeight);
         doc.text(text, 12, y);
         y += 6;
       });
 
       y += 4;
+      doc.setTextColor(0, 0, 0);
       if (y > 270) {
         doc.addPage();
         y = 10;
@@ -103,8 +66,7 @@ export const QuizResults = ({ answers, questions, onRestart, onBackToUpload }: Q
 
         <div className="flex flex-col gap-4 justify-center items-center mt-6">
           <Button onClick={onBackToUpload}>🔁 Tornar a carregar preguntes</Button>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Button onClick={downloadErrorsAsDocx} variant="secondary">📝 Descarregar .docx</Button>
+          <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
             <Button onClick={downloadErrorsAsPdf} variant="secondary">📄 Descarregar .pdf</Button>
           </div>
         </div>
