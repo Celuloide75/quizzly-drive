@@ -1,8 +1,11 @@
+
+import { useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, RefreshCw, Upload, Trophy, Target } from 'lucide-react';
 import { Answer, Question } from './QuizApp';
+import { saveAs } from 'file-saver';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
+import jsPDF from 'jspdf';
 
 interface QuizResultsProps {
   answers: Answer[];
@@ -12,127 +15,128 @@ interface QuizResultsProps {
 }
 
 export const QuizResults = ({ answers, questions, onRestart, onBackToUpload }: QuizResultsProps) => {
-  const correctAnswers = answers.filter(answer => answer.isCorrect).length;
-  const totalQuestions = answers.length;
-  const percentage = Math.round((correctAnswers / totalQuestions) * 100);
-  const incorrectAnswers = answers.filter(answer => !answer.isCorrect);
+  const correctCount = answers.filter((a) => a.isCorrect).length;
 
-  const getPerformanceColor = () => {
-    if (percentage >= 80) return 'text-success';
-    if (percentage >= 60) return 'text-warning';
-    return 'text-destructive';
+  const downloadErrorsAsDocx = async () => {
+    const incorrect = answers.filter(a => !a.isCorrect);
+
+    const allBlocks = incorrect.flatMap((a, index) => {
+      const q = questions[a.questionIndex];
+      const options = ['A', 'B', 'C', 'D'] as const;
+
+      const header = new Paragraph({ children: [new TextRun({ text: `${index + 1}. ${q.pregunta}`, bold: true })] });
+
+      const optionBlocks = options.map(opt => {
+        const text = `${opt}. ${q[opt]}`;
+        const isCorrect = opt === a.correctAnswer;
+        const isUser = opt === a.selectedAnswer;
+        let run = new TextRun(text);
+        if (isCorrect) run = run.color("008000").bold();
+        if (isUser && !isCorrect) run = run.color("ff0000").bold();
+        return new Paragraph({ children: [run] });
+      });
+
+      return [header, ...optionBlocks, new Paragraph({ text: "" })];
+    });
+
+    const doc = new Document({
+      sections: [
+        {
+          children: [
+            new Paragraph({ children: [new TextRun({ text: "Respostes incorrectes", bold: true, size: 28 })] }),
+            ...allBlocks
+          ]
+        }
+      ]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, "respostes_incorrectes.docx");
   };
 
-  const getPerformanceMessage = () => {
-    if (percentage >= 90) return 'Excel·lent! 🎉';
-    if (percentage >= 80) return 'Molt bé! 👍';
-    if (percentage >= 60) return 'Bé, però pots millorar 💪';
-    return 'Necessites més pràctica 📚';
+  const downloadErrorsAsPdf = () => {
+    const incorrect = answers.filter(a => !a.isCorrect);
+    const doc = new jsPDF();
+    doc.setFont("helvetica");
+    doc.setFontSize(12);
+    let y = 10;
+
+    incorrect.forEach((a, index) => {
+      const q = questions[a.questionIndex];
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 0, 0);
+      doc.text(`${index + 1}. ${q.pregunta}`, 10, y);
+      y += 7;
+
+      const options = ['A', 'B', 'C', 'D'] as const;
+      options.forEach(opt => {
+        const text = `${opt}. ${q[opt]}`;
+        const isCorrect = opt === a.correctAnswer;
+        const isUserWrong = opt === a.selectedAnswer && opt !== a.correctAnswer;
+
+        const color = isCorrect ? [0, 128, 0] : isUserWrong ? [200, 0, 0] : [0, 0, 0];
+        const fontWeight = isCorrect || isUserWrong ? "bold" : "normal";
+
+        doc.setTextColor(...color);
+        doc.setFont("helvetica", fontWeight);
+        doc.text(text, 12, y);
+        y += 6;
+      });
+
+      y += 4;
+      if (y > 270) {
+        doc.addPage();
+        y = 10;
+      }
+    });
+
+    doc.save("respostes_incorrectes.pdf");
   };
+
+  const incorrectAnswers = answers.filter(a => !a.isCorrect);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 p-4">
-      <div className="max-w-4xl mx-auto space-y-8">
-        
-        {/* Results Summary */}
-        <Card className="p-8 text-center shadow-[var(--shadow-quiz)]">
-          <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-              <Trophy className="w-10 h-10 text-primary" />
-            </div>
-          </div>
-          
-          <h1 className="text-3xl font-bold mb-4">Quiz Completat!</h1>
-          
-          <div className="text-6xl font-bold mb-4">
-            <span className={getPerformanceColor()}>
-              {correctAnswers}
-            </span>
-            <span className="text-muted-foreground text-4xl"> / {totalQuestions}</span>
-          </div>
-          
-          <div className="text-2xl font-semibold mb-2">
-            <span className={getPerformanceColor()}>{percentage}%</span>
-          </div>
-          
-          <p className="text-lg text-muted-foreground mb-6">
-            {getPerformanceMessage()}
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 p-4 flex flex-col items-center justify-center">
+      <Card className="w-full max-w-2xl p-8 shadow-[var(--shadow-quiz)] space-y-6 text-center">
+        <h2 className="text-3xl font-bold mb-4">Resultats</h2>
+        <p className="text-lg">Has encertat {correctCount} de {answers.length} preguntes.</p>
 
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
-            <Badge variant="outline" className="text-success border-success/50 bg-success/10 px-4 py-2">
-              <CheckCircle className="w-4 h-4 mr-2" />
-              {correctAnswers} Correctes
-            </Badge>
-            {incorrectAnswers.length > 0 && (
-              <Badge variant="outline" className="text-destructive border-destructive/50 bg-destructive/10 px-4 py-2">
-                <XCircle className="w-4 h-4 mr-2" />
-                {incorrectAnswers.length} Incorrectes
-              </Badge>
-            )}
-            <Badge variant="outline" className="text-primary border-primary/50 bg-primary/10 px-4 py-2">
-              <Target className="w-4 h-4 mr-2" />
-              {totalQuestions} Total
-            </Badge>
+        <div className="flex flex-col gap-4 justify-center items-center mt-6">
+          <Button onClick={onBackToUpload}>🔁 Tornar a carregar preguntes</Button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Button onClick={downloadErrorsAsDocx} variant="secondary">📝 Descarregar .docx</Button>
+            <Button onClick={downloadErrorsAsPdf} variant="secondary">📄 Descarregar .pdf</Button>
           </div>
+        </div>
+      </Card>
 
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button onClick={onRestart} className="bg-primary hover:bg-primary-hover text-primary-foreground">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Repetir Quiz
-            </Button>
-            <Button onClick={onBackToUpload} variant="outline">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Recarregar Preguntes
-            </Button>
-          </div>
+      {incorrectAnswers.length > 0 && (
+        <Card className="w-full max-w-2xl mt-8 p-6 shadow-[var(--shadow-quiz)] space-y-4 text-left">
+          <h3 className="text-2xl font-semibold text-destructive">Respostes incorrectes</h3>
+          {incorrectAnswers.map((a, index) => {
+            const original = questions[a.questionIndex];
+            return (
+              <div key={index} className="border-b pb-4 space-y-2">
+                <p className="font-semibold">{index + 1}. {original.pregunta}</p>
+                {(['A', 'B', 'C', 'D'] as const).map((option) => {
+                  const isUser = option === a.selectedAnswer;
+                  const isCorrect = option === a.correctAnswer;
+                  const classNames = [
+                    'pl-2 rounded',
+                    isCorrect ? 'text-green-600 font-semibold' : '',
+                    isUser && !isCorrect ? 'text-red-600 font-semibold' : ''
+                  ].join(' ');
+                  return (
+                    <p key={option} className={classNames}>
+                      {option}. {original[option]}
+                    </p>
+                  );
+                })}
+              </div>
+            );
+          })}
         </Card>
-
-        {/* Incorrect Answers Review */}
-        {incorrectAnswers.length > 0 && (
-          <Card className="p-8 shadow-[var(--shadow-quiz)]">
-            <h2 className="text-2xl font-bold mb-6 flex items-center">
-              <XCircle className="w-6 h-6 mr-3 text-destructive" />
-              Preguntes Incorrectes ({incorrectAnswers.length})
-            </h2>
-            
-            <div className="space-y-6">
-              {incorrectAnswers.map((answer, index) => {
-                const question = questions[answer.questionIndex];
-                return (
-                  <div key={index} className="border border-border rounded-lg p-6 bg-card/50">
-                    <h3 className="font-semibold text-lg mb-4">
-                      Pregunta {answer.questionIndex + 1}: {answer.question}
-                    </h3>
-                    
-                    <div className="grid gap-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium text-muted-foreground min-w-[120px]">
-                          La teva resposta:
-                        </span>
-                        <Badge variant="outline" className="text-destructive border-destructive/50 bg-destructive/10">
-                          <XCircle className="w-3 h-3 mr-1" />
-                          {answer.selectedAnswer}: {question[answer.selectedAnswer]}
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium text-muted-foreground min-w-[120px]">
-                          Resposta correcta:
-                        </span>
-                        <Badge variant="outline" className="text-success border-success/50 bg-success/10">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          {answer.correctAnswer}: {question[answer.correctAnswer]}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-        )}
-      </div>
+      )}
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { QuizQuestion } from './QuizQuestion';
@@ -200,7 +201,7 @@ export const QuizApp = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 p-4">
       <QuizQuestion
-        key={currentQuestion.pregunta}
+        key={`${currentQuestionIndex}-${currentQuestion.pregunta}`}
         question={currentQuestion}
         questionNumber={currentQuestionIndex + 1}
         totalQuestions={questions.length}
