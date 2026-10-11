@@ -40,7 +40,7 @@ export const QuizApp = () => {
     fetch(import.meta.env.BASE_URL + 'preguntes.json', { cache: 'no-store' })
       .then(r => { if (!r.ok) throw new Error('El banc oficial encara no està disponible.'); return r.json(); })
       .then(data => {
-        if (data.estat !== 'VALIDAT') throw new Error('El banc oficial està pendent de validació.');
+        if (!['VALIDAT', 'PROVA_NO_VALIDADA'].includes(data.estat)) throw new Error('El banc oficial està pendent de validació.');
         if (!Array.isArray(data.preguntes)) throw new Error('Format de dades incorrecte.');
         const valid = data.preguntes.filter((q: Question) =>
           q && q.id && q.duplicat_id && q.pregunta && q.A && q.B && q.C && q.D &&
