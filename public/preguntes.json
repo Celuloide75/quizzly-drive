@@ -1,0 +1,157 @@
+{
+  "estat": "PROVA_NO_VALIDADA",
+  "total": 10,
+  "advertiment": "Mostra de prova: 10 preguntes dels PDF aportats. Banc complet pendent de càrrega i validació visual.",
+  "preguntes": [
+    {
+      "id": "prova-2019-aux-3",
+      "pregunta": "El capítol primer de la Constitució Espanyola diu que:",
+      "A": "Cap espanyol d'origen no podrà ser privat de la seva nacionalitat.",
+      "B": "L'espanyol d'origen perd la nacionalitat en cas que una Llei orgànica ho determini.",
+      "C": "La nacionalitat espanyola només s'adquireix per naixement a l'Estat espanyol.",
+      "D": "La nacionalitat d'un espanyol d'origen serà revocada en cas de no residir en territori \nespanyol durant més de 10 anys.",
+      "correcta": "A",
+      "duplicat_id": "prova-2019-aux-3",
+      "origen": {
+        "document": "2018_942_OP_300pl_Auxiliar_Administratiu_Questionari_Solucionari_Temari_General (1).pdf",
+        "numero_original": 3,
+        "reserva": false
+      }
+    },
+    {
+      "id": "prova-2019-aux-4",
+      "pregunta": "La Constitució reconeix el dret a sindicar-se:",
+      "A": "A tothom.",
+      "B": "A totes les persones espanyoles en edat laboral.",
+      "C": "A tothom, amb limitació per llei a les Forces i Instituts Armats.",
+      "D": "A tots els residents a l'Estat en edat laboral.",
+      "correcta": "C",
+      "duplicat_id": "prova-2019-aux-4",
+      "origen": {
+        "document": "2018_942_OP_300pl_Auxiliar_Administratiu_Questionari_Solucionari_Temari_General (1).pdf",
+        "numero_original": 4,
+        "reserva": false
+      }
+    },
+    {
+      "id": "prova-2019-aux-5",
+      "pregunta": "El President del Govern és nomenat:",
+      "A": "Pel Rei.",
+      "B": "Pel Congrés de Diputats.",
+      "C": "Pel Senat.",
+      "D": "Per les Corts Generals.",
+      "correcta": "A",
+      "duplicat_id": "prova-2019-aux-5",
+      "origen": {
+        "document": "2018_942_OP_300pl_Auxiliar_Administratiu_Questionari_Solucionari_Temari_General (1).pdf",
+        "numero_original": 5,
+        "reserva": false
+      }
+    },
+    {
+      "id": "prova-2019-aux-6",
+      "pregunta": "El Congrés de Diputats es reuneix de forma ordinària:",
+      "A": "En tres sessions anuals.",
+      "B": "En dues sessions anuals, de setembre a desembre i de febrer a juny.",
+      "C": "En dues sessions, de gener a juliol i de setembre a desembre.",
+      "D": "Tantes vegades com ho decideixi la majoria de la cambra.",
+      "correcta": "B",
+      "duplicat_id": "prova-2019-aux-6",
+      "origen": {
+        "document": "2018_942_OP_300pl_Auxiliar_Administratiu_Questionari_Solucionari_Temari_General (1).pdf",
+        "numero_original": 6,
+        "reserva": false
+      }
+    },
+    {
+      "id": "prova-2019-aux-7",
+      "pregunta": "Segons la Constitució Espanyola, la moció de censura:",
+      "A": "Haurà de ser proposada com a mínim per la desena part dels Diputats.",
+      "B": "Podrà ser adoptada per la majoria simple del Congrés dels Diputats.",
+      "C": "L'adopta la mesa del Congrés dels Diputats.",
+      "D": "Podrà ser adoptada per la majoria qualificada de les Corts Generals.",
+      "correcta": "A",
+      "duplicat_id": "prova-2019-aux-7",
+      "origen": {
+        "document": "2018_942_OP_300pl_Auxiliar_Administratiu_Questionari_Solucionari_Temari_General (1).pdf",
+        "numero_original": 7,
+        "reserva": false
+      }
+    },
+    {
+      "id": "prova-2019-aux-8",
+      "pregunta": "Els ciutadans podran exercir l'acció popular i participar en l'Administració de Justícia \nmitjançant:",
+      "A": "La iniciativa parlamentària.",
+      "B": "Les Eleccions Generals.",
+      "C": "La Institució del Jurat.",
+      "D": "Els Tribunals d'Honor.",
+      "correcta": "C",
+      "duplicat_id": "prova-2019-aux-8",
+      "origen": {
+        "document": "2018_942_OP_300pl_Auxiliar_Administratiu_Questionari_Solucionari_Temari_General (1).pdf",
+        "numero_original": 8,
+        "reserva": false
+      }
+    },
+    {
+      "id": "prova-2019-aux-9",
+      "pregunta": "L’Estat s’organitza territorialment en:",
+      "A": "Municipis, províncies i en les Comunitats Autònomes que es constitueixin.",
+      "B": "Municipis, províncies, comarques i Comunitats Autònomes.",
+      "C": "Pedanies, municipis, províncies i Comunitats Autònomes.",
+      "D": "Províncies i  Comunitats Autònomes.",
+      "correcta": "A",
+      "duplicat_id": "prova-2019-aux-9",
+      "origen": {
+        "document": "2018_942_OP_300pl_Auxiliar_Administratiu_Questionari_Solucionari_Temari_General (1).pdf",
+        "numero_original": 9,
+        "reserva": false
+      }
+    },
+    {
+      "id": "prova-2019-aux-10",
+      "pregunta": "La federació de Comunitats Autònomes:",
+      "A": "Serà aprovada pel Congrés de Diputats amb una majoria de tres cinquenes parts.",
+      "B": "Serà aprovada pel Congrés de Diputats i el Senat amb majoria qualificada.",
+      "C": "En cap cas s’admetrà la federació de Comunitats Autònomes.",
+      "D": "Està regulada per una llei orgànica.",
+      "correcta": "C",
+      "duplicat_id": "prova-2019-aux-10",
+      "origen": {
+        "document": "2018_942_OP_300pl_Auxiliar_Administratiu_Questionari_Solucionari_Temari_General (1).pdf",
+        "numero_original": 10,
+        "reserva": false
+      }
+    },
+    {
+      "id": "prova-2019-aux-11",
+      "pregunta": "El president de la Generalitat:",
+      "A": "És escollit pel poble i nomenat pel Rei.",
+      "B": "És escollit pel Parlament i nomenat pel Rei.",
+      "C": "És escollit pel Parlament i nomenat pel president del Govern de l’Estat.",
+      "D": "És escollit i nomenat pel Parlament.",
+      "correcta": "B",
+      "duplicat_id": "prova-2019-aux-11",
+      "origen": {
+        "document": "2018_942_OP_300pl_Auxiliar_Administratiu_Questionari_Solucionari_Temari_General (1).pdf",
+        "numero_original": 11,
+        "reserva": false
+      }
+    },
+    {
+      "id": "prova-2019-aux-12",
+      "pregunta": "Segons l’article 141 de la Constitució Espanyola referent a la província:",
+      "A": "L’alteració dels límits provincials són competència de les Comunitats Autònomes.",
+      "B": "Els límits provincials poden ser modificats per acord entre les Subdelegacions del \nGovern a les províncies afectades, publicat als butlletins oficials.",
+      "C": "Qualsevol alteració dels límits provincials haurà de ser aprovada per les Corts \nGenerals per mitjà d’una llei orgànica.",
+      "D": "Els límits provincials poden ser modificats amb l’aprovació del Govern per mitjà d’un \ndecret.",
+      "correcta": "C",
+      "duplicat_id": "prova-2019-aux-12",
+      "origen": {
+        "document": "2018_942_OP_300pl_Auxiliar_Administratiu_Questionari_Solucionari_Temari_General (1).pdf",
+        "numero_original": 12,
+        "reserva": false
+      }
+    }
+  ]
+}
